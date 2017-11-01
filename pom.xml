@@ -104,6 +104,13 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
+				
+		<dependency>
+		    <groupId>org.synchronoss.cloud</groupId>
+		    <artifactId>nio-multipart-parser</artifactId>
+		    <version>1.1.0</version>
+		</dependency>
+		
 	</dependencies>
 
 

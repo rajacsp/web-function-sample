@@ -1,6 +1,7 @@
 package org.packtpub;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
@@ -56,6 +57,7 @@ public class Server {
 			.andRoute(GET("/{id}"), handler::getUser)
 			.andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createUser)
 			.andRoute(PUT("/").and(contentType(APPLICATION_JSON)), handler::updateUser)
+			.andRoute(POST("/file").and(contentType(MULTIPART_FORM_DATA)), handler::upload)
 			.andRoute(DELETE("/{id}").and(contentType(APPLICATION_JSON)), handler::deleteUser)
 		);
 	}
