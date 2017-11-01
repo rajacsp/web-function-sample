@@ -26,5 +26,4 @@ public interface PersonRepository {
 	Flux<Person> allPeople();
 
 	Mono<Void> savePerson(Mono<Person> person);
-
 }

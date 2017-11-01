@@ -19,8 +19,12 @@ package org.springframework.samples.web.reactive.function;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
+
 import reactor.ipc.netty.http.server.HttpServer;
 
+import org.packtpub.UserHandler;
+import org.packtpub.UserRepository;
+import org.packtpub.UserRepositorySample;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
@@ -43,7 +47,7 @@ public class Server {
 
 	public static final String HOST = "localhost";
 
-	public static final int PORT = 8080;
+	public static final int PORT = 8082;
 
 	public static void main(String[] args) throws Exception {
 		Server server = new Server();
@@ -58,12 +62,29 @@ public class Server {
 		PersonRepository repository = new DummyPersonRepository();
 		PersonHandler handler = new PersonHandler(repository);
 
-		return nest(path("/person"),
-				nest(accept(APPLICATION_JSON),
-						route(GET("/{id}"), handler::getPerson)
-						.andRoute(method(HttpMethod.GET), handler::listPeople)
+		return nest (
+				path("/person"),
+				nest(
+					accept(APPLICATION_JSON),
+					route(GET("/{id}"), handler::getPerson)
+					.andRoute(method(HttpMethod.GET), handler::listPeople)
 				).andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createPerson));
 	}
+	
+	/*
+	public RouterFunction<ServerResponse> routingFunction2() {
+		UserRepository repository = new UserRepositorySample();
+		UserHandler handler = new UserHandler(repository);
+
+		return nest (
+				path("/person1"),
+				nest(
+					accept(APPLICATION_JSON),
+					route(GET("/{id}"), handler::getAllUsers)
+					.andRoute(method(HttpMethod.GET), handler::getAllUsers)
+				).andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::getAllUsers));
+	}
+	*/
 
 	public void startReactorServer() throws InterruptedException {
 		RouterFunction<ServerResponse> route = routingFunction();

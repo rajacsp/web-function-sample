@@ -42,7 +42,6 @@ public class PersonHandler {
 				.switchIfEmpty(notFound);
 	}
 
-
 	public Mono<ServerResponse> createPerson(ServerRequest request) {
 		Mono<Person> person = request.bodyToMono(Person.class);
 		return ServerResponse.ok().build(this.repository.savePerson(person));
@@ -52,5 +51,4 @@ public class PersonHandler {
 		Flux<Person> people = this.repository.allPeople();
 		return ServerResponse.ok().contentType(APPLICATION_JSON).body(people, Person.class);
 	}
-
 }
