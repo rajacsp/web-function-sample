@@ -5,11 +5,14 @@ import static org.springframework.web.reactive.function.BodyInserters.fromObject
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -58,12 +61,18 @@ public class UserHandler {
 	
 	public Mono<ServerResponse> upload(ServerRequest request) {
 		
-		Mono<Part> part = request.body(BodyExtractors.toMono(Part.class));
-		
+		//Mono<Part> part = request.body(BodyExtractors.toMono(Part.class));		
 		//Mono<FilePart> part = request.bodyToMono(FilePart.class);
+		
+		Mono<MultiValueMap<String, Part>> part = request.body(BodyExtractors.toMultipartData());
 		
 		//part.log().block();
 		System.out.println("trap : "+part);//fileName);
+		
+		//MultiValueMap<String, Part> map = part.block();
+		
+		//Part filePart = map.getFirst("fileToUpload");
+		//System.out.println("filePart : "+filePart);//fileName);
 		
 		//FilePart filePart = part.log().block();
 		
@@ -118,7 +127,7 @@ public class UserHandler {
 		
 		//System.out.println("{current time  " + nowMillis);
 	    
-		Date now = new Date(nowMillis);
+		//Date now = new Date(nowMillis);
 		// System.out.println("{current date  " + now);	    
 	    
 	    byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(secretKey);
