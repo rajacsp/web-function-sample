@@ -58,6 +58,7 @@ public class Server {
 			.andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createUser)
 			.andRoute(PUT("/").and(contentType(APPLICATION_JSON)), handler::updateUser)
 			.andRoute(POST("/file").and(contentType(MULTIPART_FORM_DATA)), handler::upload)
+			.andRoute(GET("/generate/token"), handler::generateToken)
 			.andRoute(DELETE("/{id}").and(contentType(APPLICATION_JSON)), handler::deleteUser)
 		);
 	}

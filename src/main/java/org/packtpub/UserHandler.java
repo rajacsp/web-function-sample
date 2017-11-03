@@ -3,12 +3,20 @@ package org.packtpub;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
-import org.springframework.http.codec.multipart.FilePart;
+import java.security.Key;
+import java.util.Date;
+
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
+
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -67,8 +75,50 @@ public class UserHandler {
 		return ServerResponse.ok().build();
 	}
 	
+	public Mono<ServerResponse> generateToken(ServerRequest request){
+		
+		String token = createJWTToken("one", "two", ttlMillis);
+		
+		Mono<String> userMono = Mono.justOrEmpty(token);
+		Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+		return userMono
+				.flatMap(user -> ServerResponse.ok().contentType(APPLICATION_JSON).body(fromObject(user)))
+				.switchIfEmpty(notFound);
+	}
+	
 	public Mono<ServerResponse> deleteUser(ServerRequest request) {		
 		int userId = Integer.valueOf(request.pathVariable("id"));
 		return ServerResponse.ok().build(this.userRepository.deleteUser(userId));
+	}
+	
+	private static final String secretKey= "some_secret_key";
+	private static final long ttlMillis = 1000 * 60 * 1; //1 min
+	public String createJWTToken(String subject, String issuer, long ttlMillis) {
+		 
+		 SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+		 
+	    //The JWT signature algorithm we will be using to sign the token
+		long nowMillis = System.currentTimeMillis();
+   	//System.out.println("{current time  " + nowMillis);
+	    Date now = new Date(nowMillis);
+	   // System.out.println("{current date  " + now);
+	    
+	    
+	    byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(secretKey);
+	    Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+	    
+	    JwtBuilder builder = Jwts.builder()
+               .setSubject(subject)
+               .setIssuer(issuer)
+               .signWith(signatureAlgorithm, signingKey);
+
+	    if (ttlMillis >= 0) {
+		    long expMillis = nowMillis + ttlMillis;
+		        Date exp = new Date(expMillis);
+		        builder.setExpiration(exp);
+		    }
+   
+	    
+	    return builder.compact();
 	}
 }
