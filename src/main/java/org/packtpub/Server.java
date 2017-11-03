@@ -15,6 +15,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.t
 
 import java.io.IOException;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -59,6 +60,7 @@ public class Server {
 			.andRoute(PUT("/").and(contentType(APPLICATION_JSON)), handler::updateUser)
 			.andRoute(POST("/file").and(contentType(MULTIPART_FORM_DATA)), handler::upload)
 			.andRoute(GET("/generate/token"), handler::generateToken)
+			.andRoute(GET("/verify/token").and(contentType(MediaType.ALL)), handler::verifyToken)
 			.andRoute(DELETE("/{id}").and(contentType(APPLICATION_JSON)), handler::deleteUser)
 		);
 	}

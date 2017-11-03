@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -86,23 +87,39 @@ public class UserHandler {
 				.switchIfEmpty(notFound);
 	}
 	
+	public Mono<ServerResponse> verifyToken(ServerRequest request){
+		
+		String token = request.headers().header("token").get(0);		
+		System.out.println("token : "+token);
+		
+		String issuer = verifyIssuer(token);		
+		System.out.println("issuer : "+issuer);
+		
+		Mono<String> userMono = Mono.justOrEmpty(issuer);
+		Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+		return userMono
+				.flatMap(user -> ServerResponse.ok().contentType(APPLICATION_JSON).body(fromObject(user)))
+				.switchIfEmpty(notFound);
+	}
+	
 	public Mono<ServerResponse> deleteUser(ServerRequest request) {		
 		int userId = Integer.valueOf(request.pathVariable("id"));
 		return ServerResponse.ok().build(this.userRepository.deleteUser(userId));
 	}
 	
 	private static final String secretKey= "some_secret_key";
-	private static final long ttlMillis = 1000 * 60 * 1; //1 min
+	private static final long ttlMillis = 1000 * 60 * 10; //1 min
 	public String createJWTToken(String subject, String issuer, long ttlMillis) {
 		 
 		 SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 		 
 	    //The JWT signature algorithm we will be using to sign the token
 		long nowMillis = System.currentTimeMillis();
-   	//System.out.println("{current time  " + nowMillis);
-	    Date now = new Date(nowMillis);
-	   // System.out.println("{current date  " + now);
+		
+		//System.out.println("{current time  " + nowMillis);
 	    
+		Date now = new Date(nowMillis);
+		// System.out.println("{current date  " + now);	    
 	    
 	    byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(secretKey);
 	    Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
@@ -120,5 +137,13 @@ public class UserHandler {
    
 	    
 	    return builder.compact();
+	}
+	
+	public String verifyIssuer(String token){
+		Claims claims = Jwts.parser()         
+			       .setSigningKey(DatatypeConverter.parseBase64Binary(secretKey))
+			       .parseClaimsJws(token).getBody();
+		
+		return claims.getIssuer();				
 	}
 }
